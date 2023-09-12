@@ -44,6 +44,6 @@ humantime = { version = "2.1.0", default-features = false }
 log = { version = "0.4.19", default-features = false }
 prefix-hex = { version = "0.7.1", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.104", default-features = false }
-thiserror = { version = "1.0.44", default-features = false }
+thiserror = { version = "1.0.40", default-features = false }
 tokio = { version = "1.29.1", default-features = false, features = ["fs"] }
 zeroize = { version = "1.6.0", default-features = false }
