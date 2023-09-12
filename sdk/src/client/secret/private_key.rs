@@ -42,7 +42,7 @@ impl SecretManage for PrivateKeySecretManager {
         _coin_type: u32,
         _account_index: u32,
         _address_indexes: Range<u32>,
-        _options: impl Into<Option<GenerateAddressOptions>> + Send,
+        _options: Option<GenerateAddressOptions>
     ) -> Result<Vec<Ed25519Address>, Self::Error> {
         let public_key = self.0.public_key().to_bytes();
 
@@ -59,7 +59,7 @@ impl SecretManage for PrivateKeySecretManager {
         _coin_type: u32,
         _account_index: u32,
         _address_indexes: Range<u32>,
-        _options: impl Into<Option<GenerateAddressOptions>> + Send,
+        _options: Option<GenerateAddressOptions>
     ) -> Result<Vec<EvmAddress>, Self::Error> {
         // TODO replace with a more fitting variant.
         Err(Error::SecretManagerMismatch)

@@ -75,7 +75,7 @@ pub trait SecretManage: Send + Sync {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>,
     ) -> Result<Vec<Ed25519Address>, Self::Error>;
 
     async fn generate_evm_addresses(
@@ -83,7 +83,7 @@ pub trait SecretManage: Send + Sync {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>
     ) -> Result<Vec<EvmAddress>, Self::Error>;
 
     /// Signs msg using the given [`Chain`] using Ed25519.
@@ -152,7 +152,12 @@ pub enum SecretManager {
     /// Secret manager that's just a placeholder, so it can be provided to an online wallet, but can't be used for
     /// signing.
     Placeholder,
+    /// Generic, dynamically dispatched secret manager. This is a workaround until the SecretManager is generic.
+    Generic(Box<dyn HackManage<Error = crate::client::Error>>)
 }
+
+pub trait HackManage: SecretManage {}
+
 
 #[cfg(feature = "stronghold")]
 impl From<StrongholdSecretManager> for SecretManager {
@@ -192,6 +197,8 @@ impl Debug for SecretManager {
             #[cfg(feature = "private_key_secret_manager")]
             Self::PrivateKey(_) => f.debug_tuple("PrivateKey").field(&"...").finish(),
             Self::Placeholder => f.debug_struct("Placeholder").finish(),
+            Self::Generic(_) => f.debug_tuple("Generic").field(&"...").finish(),
+
         }
     }
 }
@@ -272,6 +279,7 @@ impl TryFrom<SecretManagerDto> for SecretManager {
             }
 
             SecretManagerDto::Placeholder => Self::Placeholder,
+            
         })
     }
 }
@@ -303,6 +311,7 @@ impl From<&SecretManager> for SecretManagerDto {
             SecretManager::PrivateKey(_private_key) => Self::PrivateKey("...".to_string().into()),
 
             SecretManager::Placeholder => Self::Placeholder,
+            SecretManager::Generic(_) => todo!(),
         }
     }
 }
@@ -316,7 +325,7 @@ impl SecretManage for SecretManager {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>
     ) -> crate::client::Result<Vec<Ed25519Address>> {
         match self {
             #[cfg(feature = "stronghold")]
@@ -339,6 +348,11 @@ impl SecretManage for SecretManager {
                     .await
             }
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            Self::Generic(secret_manager) => {
+                secret_manager
+                    .generate_ed25519_addresses(coin_type, account_index, address_indexes, options)
+                    .await
+            }
         }
     }
 
@@ -347,7 +361,7 @@ impl SecretManage for SecretManager {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+         options: Option<GenerateAddressOptions>
     ) -> Result<Vec<EvmAddress>, Self::Error> {
         match self {
             #[cfg(feature = "stronghold")]
@@ -370,6 +384,7 @@ impl SecretManage for SecretManager {
                     .await
             }
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            SecretManager::Generic(_) => todo!(),
         }
     }
 
@@ -383,6 +398,7 @@ impl SecretManage for SecretManager {
             #[cfg(feature = "private_key_secret_manager")]
             Self::PrivateKey(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            Self::Generic(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
         }
     }
 
@@ -400,6 +416,7 @@ impl SecretManage for SecretManager {
             #[cfg(feature = "private_key_secret_manager")]
             Self::PrivateKey(secret_manager) => secret_manager.sign_secp256k1_ecdsa(msg, chain).await,
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            Self::Generic(secret_manager) => secret_manager.sign_secp256k1_ecdsa(msg, chain).await,
         }
     }
 
@@ -429,6 +446,11 @@ impl SecretManage for SecretManager {
                     .await
             }
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            Self::Generic(secret_manager) => {
+                secret_manager
+                    .sign_transaction_essence(prepared_transaction_data, time)
+                    .await
+            }
         }
     }
 
@@ -445,6 +467,7 @@ impl SecretManage for SecretManager {
             #[cfg(feature = "private_key_secret_manager")]
             Self::PrivateKey(secret_manager) => secret_manager.sign_transaction(prepared_transaction_data).await,
             Self::Placeholder => Err(Error::PlaceholderSecretManager),
+            Self::Generic(secret_manager) => Ok(secret_manager.sign_transaction(prepared_transaction_data).await?),
         }
     }
 }
@@ -472,6 +495,7 @@ impl SecretManagerConfig for SecretManager {
             #[cfg(feature = "private_key_secret_manager")]
             Self::PrivateKey(_) => None,
             Self::Placeholder => None,
+            Self::Generic(_) => None,
         }
     }
 
