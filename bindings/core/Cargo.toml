@@ -22,7 +22,7 @@ prefix-hex = { version = "0.7.1", default-features = false }
 primitive-types = { version = "0.12.1", default-features = false }
 serde = { version = "1.0.175", default-features = false }
 serde_json = { version = "1.0.103", default-features = false }
-thiserror = { version = "1.0.44", default-features = false }
+thiserror = { version = "1.0.40", default-features = false }
 tokio = { version = "1.29.1", default-features = false }
 zeroize = { version = "1.6.0", default-features = false }
 
