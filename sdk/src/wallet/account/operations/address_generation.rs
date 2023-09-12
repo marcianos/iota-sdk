@@ -35,9 +35,9 @@ where
     pub async fn generate_ed25519_addresses(
         &self,
         amount: u32,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>
     ) -> crate::wallet::Result<Vec<AccountAddress>> {
-        let options = options.into().unwrap_or_default();
+        let options = options.unwrap_or_default();
         log::debug!(
             "[ADDRESS GENERATION] generating {amount} addresses, internal: {}",
             options.internal

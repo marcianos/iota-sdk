@@ -49,7 +49,7 @@ impl SecretManage for StrongholdAdapter {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>
     ) -> Result<Vec<Ed25519Address>, Self::Error> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
@@ -65,7 +65,7 @@ impl SecretManage for StrongholdAdapter {
 
         // Addresses to return.
         let mut addresses = Vec::new();
-        let internal = options.into().map(|o| o.internal).unwrap_or_default();
+        let internal = options.map(|o| o.internal).unwrap_or_default();
 
         for address_index in address_indexes {
             let chain = Bip44::new(coin_type)
@@ -121,7 +121,7 @@ impl SecretManage for StrongholdAdapter {
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
-        options: impl Into<Option<GenerateAddressOptions>> + Send,
+        options: Option<GenerateAddressOptions>
     ) -> Result<Vec<EvmAddress>, Self::Error> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
@@ -137,7 +137,7 @@ impl SecretManage for StrongholdAdapter {
 
         // Addresses to return.
         let mut addresses = Vec::new();
-        let internal = options.into().map(|o| o.internal).unwrap_or_default();
+        let internal = options.map(|o| o.internal).unwrap_or_default();
 
         for address_index in address_indexes {
             let chain = Bip44::new(coin_type)
