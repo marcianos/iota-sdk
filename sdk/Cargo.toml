@@ -87,7 +87,7 @@ rumqttc = { version = "0.22.0", default-features = false, features = [
 ], optional = true }
 serde_repr = { version = "0.1.15", default-features = false, optional = true }
 thiserror = { version = "1.0.40", default-features = false, optional = true }
-time = { version = "0.3.23", default-features = false, features = [
+time = { version = "0.3.14", default-features = false, features = [
     "serde",
     "macros",
 ], optional = true }
