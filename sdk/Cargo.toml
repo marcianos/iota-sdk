@@ -91,7 +91,7 @@ time = { version = "0.3.23", default-features = false, features = [
     "serde",
     "macros",
 ], optional = true }
-url = { version = "2.4.0", default-features = false, features = [
+url = { version = "2.3.1", default-features = false, features = [
     "serde",
 ], optional = true }
 zeroize = { version = "1.6.0", default-features = false, features = [
